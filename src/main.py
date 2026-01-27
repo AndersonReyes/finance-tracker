@@ -1,7 +1,7 @@
 from nicegui import ui
 
 from nav import nav
-from pages import budgets, expense_report, import_transactions
+from pages import bills, budgets, expense_report, import_transactions
 
 
 def root():
@@ -11,6 +11,7 @@ def root():
             "/expense_report": expense_report.page,
             "/import": import_transactions.page,
             "/budgets": budgets.page,
+            "/bills": bills.page,
         }
     ).classes("w-full")
 

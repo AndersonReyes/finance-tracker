@@ -1,10 +1,16 @@
 import datetime
 import decimal
+import re
 from dataclasses import dataclass
 from typing import List
 
 from sqlalchemy import DateTime, ForeignKey, Numeric, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 
 class Base(DeclarativeBase):
@@ -39,6 +45,21 @@ class Budget(Base):
     id: Mapped[int] = mapped_column(primary_key=True, unique=True, autoincrement=True)
     category: Mapped[str] = mapped_column(String(256))
     budget: Mapped[decimal.Decimal] = mapped_column(Numeric())
+
+
+class Bill(Base):
+    __tablename__ = "bills"
+
+    id: Mapped[int] = mapped_column(primary_key=True, unique=True, autoincrement=True)
+    # Amount matched in a period for bill
+    spent: Mapped[decimal.Decimal] = mapped_column(Numeric())
+    name: Mapped[str] = mapped_column(String(256), index=True)
+    regex_str: Mapped[str] = mapped_column(String(256))
+    expected_amount: Mapped[str] = mapped_column(Numeric())
+
+    @property
+    def regex(self):
+        return re.compile(self.regex_str)
 
 
 @dataclass

@@ -23,5 +23,9 @@ def nav():
                 "Budgets",
                 on_click=lambda: ui.navigate.to("/budgets"),
             )
+            ui.button(
+                "Bills",
+                on_click=lambda: ui.navigate.to("/bills"),
+            )
 
     ui.separator().classes("w-full")

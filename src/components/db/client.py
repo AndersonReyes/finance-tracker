@@ -5,9 +5,10 @@ from typing import List, Sequence
 from sqlalchemy import and_, create_engine, delete, func, select, update
 from sqlalchemy.orm import Session
 
-from components.db.models import Base, Budget, CategoryExpense, Transaction
+from components.db.models import Base, Bill, Budget, CategoryExpense, Transaction
 
-_engine = create_engine("sqlite:///db.sqlite")
+_engine = create_engine("sqlite:///db.sqlite", echo=True)
+
 Base.metadata.create_all(_engine)
 
 # with Session(_engine) as s:
@@ -108,4 +109,28 @@ def update_budgets(budgets: List[dict]):
 def delete_budget_by_id(ids: List[int]):
     with Session(_engine) as s:
         s.execute(delete(Budget).where(Budget.id.in_(ids)))
+        s.commit()
+
+
+def get_bills() -> Sequence[Bill]:
+    with Session(_engine) as s:
+        qry = select(Bill).order_by(Bill.name)
+        return s.scalars(qry).all()
+
+
+def add_bills(bills: List[Bill]):
+    with Session(_engine) as s:
+        s.add_all(bills)
+        s.commit()
+
+
+def update_bills(bills: List[dict]):
+    with Session(_engine) as s:
+        s.execute(update(Bill), bills)
+        s.commit()
+
+
+def delete_bill_by_id(ids: List[int]):
+    with Session(_engine) as s:
+        s.execute(delete(Bill).where(Bill.id.in_(ids)))
         s.commit()
