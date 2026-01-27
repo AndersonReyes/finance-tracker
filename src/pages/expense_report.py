@@ -33,8 +33,7 @@ def category_table():
         with table.cell("spent"):
             ui.badge().props(
                 """
-                :color="props.row.color"
-                :color="((Math.abs(props.row.spent) > props.row.budget) && props.row.budget > 0) ? 'red' : 'green'"
+                :color="((props.row.spent < -props.row.budget) && props.row.budget > 0) ? 'red' : 'green'"
                 :label="props.value"
             """
             )
@@ -65,7 +64,7 @@ def category_chart():
                     "align": "left",
                     "verticalAlign": "middle",
                 },
-                "data": [v.spent.copy_abs() for v in state.data],
+                "data": [v.spent for v in state.data],
             },
             {
                 "type": "bar",

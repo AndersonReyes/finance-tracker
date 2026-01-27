@@ -1,7 +1,5 @@
 from nicegui import ui
 
-import config
-
 
 def nav():
     with ui.column(align_items="center").classes("w-full"):
@@ -12,19 +10,18 @@ def nav():
             ui.button("Back", on_click=ui.navigate.back)
             ui.button("Forward", on_click=ui.navigate.forward)
 
-            for uri in config.PAGES:
-                name = uri.replace("_", " ").replace("/", "").capitalize()
-                ui.button(
-                    name,
-                    on_click=lambda: ui.navigate.to(uri),
-                )
-            # ui.button(
-            #     "import transactions",
-            #     on_click=lambda: ui.navigate.to("/import"),
-            # )
-            # ui.button(
-            #     "Budgets",
-            #     on_click=lambda: ui.navigate.to("/budgets"),
-            # )
+            ui.button(
+                "Expense Reports",
+                on_click=lambda: ui.navigate.to("/expense_report"),
+            )
+
+            ui.button(
+                "import transactions",
+                on_click=lambda: ui.navigate.to("/import"),
+            )
+            ui.button(
+                "Budgets",
+                on_click=lambda: ui.navigate.to("/budgets"),
+            )
 
     ui.separator().classes("w-full")

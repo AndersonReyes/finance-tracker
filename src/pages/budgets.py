@@ -17,15 +17,15 @@ def add_row_edit(e: GenericEventArguments):
     client.update_budgets(
         [dict(id=row["id"], budget=row["budget"], category=row["category"])]
     )
-    ui.notify("row updated")
     list_budgets.refresh()
+    ui.notify("row updated")
 
 
 async def delete_selected(table: ui.aggrid):
     selected_ids = [row["id"] for row in await table.get_selected_rows()]
     client.delete_budget_by_id(selected_ids)
-    ui.notify("row deleted")
     list_budgets.refresh()
+    ui.notify("row deleted")
 
 
 @ui.refreshable
@@ -57,7 +57,7 @@ def list_budgets():
         .style("height: 66.67vh")
     )
     table = table.on("cellValueChanged", lambda x: add_row_edit(x))
-    ui.button("Delete selected", on_click=lambda: delete_selected(table))
+    ui.button("Delete selected", color="red", on_click=lambda: delete_selected(table))
 
 
 def discover_from_db():
@@ -65,7 +65,7 @@ def discover_from_db():
     cats = [models.Budget(category=c, budget=decimal.Decimal("0")) for c in cats]
     existing = {b.category for b in client.get_budgets()}
 
-    to_add = [b for b in cats if b not in existing]
+    to_add = [b for b in cats if b.category not in existing]
     client.add_budgets(to_add)
 
     list_budgets.refresh()
