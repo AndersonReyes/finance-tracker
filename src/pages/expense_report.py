@@ -127,21 +127,13 @@ def bills_chart():
                     "align": "left",
                     "verticalAlign": "middle",
                 },
-                "data": [-v.charged for v in aggregated],
+                "data": [abs(v.actual_amount) for v in aggregated],
             },
         ],
         "legend": {"data": ["Expected", "Charged"]},
         "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
     }
-    ui.echart(
-        chart,
-        theme={
-            "color": [
-                "#DBF227",
-                "#C23E34",
-            ]
-        },
-    ).classes("w-full h-128")
+    ui.echart(chart).classes("w-full h-128")
 
 
 def load_data():
@@ -165,10 +157,10 @@ def page():
             date_input.on_value_change(lambda x: load_data())
             load_data()
 
-        ui.markdown("## Category budget vs expense")
+        ui.markdown("## Category: budget vs expense")
         category_chart()
         ui.separator()
 
-        ui.markdown("## Bills")
+        ui.markdown("## Bills: expected vs actual")
         bills_chart()
         # category_table()

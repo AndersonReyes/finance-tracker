@@ -16,7 +16,7 @@ def agg_amount_by_bill(
         BillCharged(
             name=bill.name,
             expected_amount=bill.expected_amount,
-            charged=agg.get(bill.id, decimal.Decimal("0")),
+            actual_amount=agg.get(bill.id, decimal.Decimal("0")),
         )
         for bill in bills
     ]

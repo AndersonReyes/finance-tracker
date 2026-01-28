@@ -1,10 +1,9 @@
 import datetime
 import decimal
-import re
 from dataclasses import dataclass
 from typing import List
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import DateTime, ForeignKey, Numeric, String
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -74,4 +73,4 @@ class CategoryExpense:
 class BillCharged:
     name: str
     expected_amount: decimal.Decimal
-    charged: decimal.Decimal
+    actual_amount: decimal.Decimal
