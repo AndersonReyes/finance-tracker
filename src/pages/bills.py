@@ -1,15 +1,24 @@
 import decimal
 
-from nicegui import binding, ui
+from nicegui import ui
 from nicegui.events import GenericEventArguments
 
 from components.db import client, models
 from nav import nav
 
 
-@binding.bindable_dataclass
-class _State:
-    pass
+async def match_bills(table: ui.aggrid):
+    bills = [
+        models.Bill(
+            id=row["id"],
+            name=row["name"],
+            regex_str=row["matcher"],
+            expected_amount=row["expected_amount"],
+        )
+        for row in await table.get_selected_rows()
+    ]
+    matched = client.match_bills_to_transactions(bills)
+    ui.notify(f"matched {matched} transactons")
 
 
 def row_add():
@@ -17,7 +26,6 @@ def row_add():
         [
             models.Bill(
                 name="New BILL: Edit ME",
-                spent=decimal.Decimal("0"),
                 regex_str="",
                 expected_amount=decimal.Decimal("0"),
             )
@@ -35,7 +43,7 @@ def row_edit(e: GenericEventArguments):
                 id=row["id"],
                 name=row["name"],
                 expected_amount=row["expected_amount"],
-                regex_str=row["regex_str"],
+                regex_str=row["matcher"],
             )
         ]
     )
@@ -57,8 +65,7 @@ def list_bills():
             "id": b.id,
             "name": b.name,
             "expected_amount": b.expected_amount,
-            "regex_str": b.regex_str,
-            "spent": b.spent,
+            "matcher": b.regex_str,
         }
         for b in client.get_bills()
     ]
@@ -66,10 +73,20 @@ def list_bills():
         {"field": "id", "editable": False, "sortable": True},
         {"field": "name", "editable": True, "sortable": True},
         {"field": "expected_amount", "editable": True, "sortable": True},
-        {"field": "regex_str", "editable": True, "sortable": True},
+        {"field": "matcher", "editable": True},
     ]
 
-    ui.button("Add Row", color="primary", on_click=lambda: row_add())
+    with ui.row(align_items="center").classes("w-full"):
+        ui.button("Add Row", color="primary", on_click=lambda: row_add())
+        ui.button(
+            "Match bill to transactions",
+            color="green",
+            on_click=lambda x: match_bills(table),
+        )
+        ui.button(
+            "Delete selected", color="red", on_click=lambda: delete_selected(table)
+        )
+
     table = (
         ui.aggrid(
             {
@@ -84,7 +101,6 @@ def list_bills():
         .style("height: 66.67vh")
     )
     table = table.on("cellValueChanged", lambda x: row_edit(x))
-    ui.button("Delete selected", color="red", on_click=lambda: delete_selected(table))
 
 
 def page():

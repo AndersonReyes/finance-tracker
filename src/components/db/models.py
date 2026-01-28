@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from typing import List
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -36,7 +36,10 @@ class Transaction(Base):
     date: Mapped[datetime.datetime] = mapped_column(DateTime(), index=True)
     source_account_name: Mapped[str] = mapped_column(ForeignKey("accounts.name"))
     source_account: Mapped[Account] = relationship("Account")
-    tags: Mapped[str] = mapped_column(String(512))
+    bill_id: Mapped[int] = mapped_column(
+        ForeignKey("bills.id", name="fk_bill_id"), nullable=True
+    )
+    bill = relationship("Bill")
 
 
 class Budget(Base):
@@ -52,14 +55,12 @@ class Bill(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, unique=True, autoincrement=True)
     # Amount matched in a period for bill
-    spent: Mapped[decimal.Decimal] = mapped_column(Numeric())
     name: Mapped[str] = mapped_column(String(256), index=True)
     regex_str: Mapped[str] = mapped_column(String(256))
     expected_amount: Mapped[str] = mapped_column(Numeric())
-
-    @property
-    def regex(self):
-        return re.compile(self.regex_str)
+    transactions: Mapped[List[Transaction]] = relationship(
+        "Transaction", back_populates="bill"
+    )
 
 
 @dataclass

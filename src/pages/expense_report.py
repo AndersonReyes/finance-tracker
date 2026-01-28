@@ -107,5 +107,5 @@ def page():
 
         category_chart()
         ui.separator()
-        ui.markdown("## Transactions")
+        ui.markdown("## Categories")
         category_table()

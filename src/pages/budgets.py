@@ -1,15 +1,10 @@
 import decimal
 
-from nicegui import binding, ui
+from nicegui import ui
 from nicegui.events import GenericEventArguments
 
 from components.db import client, models
 from nav import nav
-
-
-@binding.bindable_dataclass
-class _State:
-    pass
 
 
 def add_row_edit(e: GenericEventArguments):

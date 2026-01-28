@@ -96,18 +96,39 @@ def process_capitalone_bank(
 async def transactions():
     trans = client.get_transactions(datetime.min, datetime.max)
     columns = [
-        "date",
-        "category",
-        "description",
-        "amount",
-        "source_account_name",
-        "tags",
+        {"field": "id", "name": "id"},
+        {"field": "date", "sortable": True},
+        {"field": "category"},
+        {"field": "description", "filter": "agTextColumnFilter"},
+        {"field": "amount"},
+        {"field": "source_account_name", "filter": "agTextColumnFilter"},
+        {"field": "bill", "filter": "agTextColumnFilter"},
     ]
     rows = []
     for t in trans:
-        rows.append({c: getattr(t, c) for c in columns})
+        bill = t.bill
+        if bill:
+            bill = bill.name
+        rows.append(
+            {
+                "id": t.id,
+                "date": t.date,
+                "category": t.category,
+                "description": t.description,
+                "source_account_name": t.source_account_name,
+                "amount": t.amount,
+                "bill": bill,
+            }
+        )
+        # rows.append({c: getattr(t, c["field"]) for c in columns})
 
-    ui.table(rows=rows, pagination=50).classes("w-full")
+    ui.aggrid(
+        {
+            "columnDefs": columns,
+            "rowData": rows,
+            "pagination": True,
+        }
+    ).classes("w-full").style("height: 66.67vh")
 
 
 async def insert_data(e: UploadEventArguments):
@@ -141,6 +162,7 @@ async def insert_data(e: UploadEventArguments):
     client.add_transactions(trs)
     transactions.refresh()
     print("processed file: ", e.file.name)
+    ui.notify("processed file: " + e.file.name)
 
 
 @ui.refreshable

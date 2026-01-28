@@ -2,8 +2,8 @@ import decimal
 from datetime import datetime, timedelta
 from typing import List, Sequence
 
-from sqlalchemy import and_, create_engine, delete, func, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, create_engine, delete, func, or_, select, update
+from sqlalchemy.orm import Session, joinedload
 
 from components.db.models import Base, Bill, Budget, CategoryExpense, Transaction
 
@@ -36,6 +36,7 @@ def get_transactions(start: datetime, end: datetime) -> Sequence[Transaction]:
     with Session(_engine) as s:
         stmt = (
             select(Transaction)
+            .options(joinedload(Transaction.bill))
             .where(
                 and_(
                     Transaction.date >= start,
@@ -134,3 +135,26 @@ def delete_bill_by_id(ids: List[int]):
     with Session(_engine) as s:
         s.execute(delete(Bill).where(Bill.id.in_(ids)))
         s.commit()
+
+
+def match_bills_to_transactions(bills: List[Bill]) -> int:
+    num_updated = 0
+    with Session(_engine) as s:
+        for b in bills:
+            res = s.execute(
+                update(Transaction)
+                .where(
+                    and_(
+                        or_(Transaction.bill_id != b.id, Transaction.bill_id.is_(None)),
+                        Transaction.description.like(b.regex_str),
+                    )
+                )
+                .values(bill_id=b.id)
+                .returning(Transaction.id)
+            ).all()
+            s.commit()
+            num_matched = len(res)
+            num_updated += num_matched
+
+            print(f"assigned {num_matched} transactions for bill: {b.name}")
+    return num_updated

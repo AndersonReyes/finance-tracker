@@ -16,8 +16,8 @@ def nav():
             )
 
             ui.button(
-                "import transactions",
-                on_click=lambda: ui.navigate.to("/import"),
+                "Transactions",
+                on_click=lambda: ui.navigate.to("/transactions"),
             )
             ui.button(
                 "Budgets",
