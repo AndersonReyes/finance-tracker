@@ -5,9 +5,16 @@ from typing import List, Sequence
 from sqlalchemy import and_, create_engine, delete, func, or_, select, update
 from sqlalchemy.orm import Session, joinedload
 
-from components.db.models import Base, Bill, Budget, CategoryExpense, Transaction
+from components.db.models import (
+    Base,
+    Bill,
+    BillCharged,
+    Budget,
+    CategoryExpense,
+    Transaction,
+)
 
-_engine = create_engine("sqlite:///db.sqlite", echo=True)
+_engine = create_engine("sqlite:///db.sqlite", echo=False)
 
 Base.metadata.create_all(_engine)
 

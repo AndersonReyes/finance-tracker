@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from nicegui import ui
 
 
 def _defaul_dates():
-    end = datetime.today()
+    end = datetime.today().replace(day=1) - timedelta(days=1)
     start = end.replace(day=1)
     return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
 

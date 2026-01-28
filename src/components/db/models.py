@@ -57,7 +57,7 @@ class Bill(Base):
     # Amount matched in a period for bill
     name: Mapped[str] = mapped_column(String(256), index=True)
     regex_str: Mapped[str] = mapped_column(String(256))
-    expected_amount: Mapped[str] = mapped_column(Numeric())
+    expected_amount: Mapped[decimal.Decimal] = mapped_column(Numeric())
     transactions: Mapped[List[Transaction]] = relationship(
         "Transaction", back_populates="bill"
     )
@@ -68,3 +68,10 @@ class CategoryExpense:
     category: str
     spent: decimal.Decimal
     budget: decimal.Decimal
+
+
+@dataclass
+class BillCharged:
+    name: str
+    expected_amount: decimal.Decimal
+    charged: decimal.Decimal
