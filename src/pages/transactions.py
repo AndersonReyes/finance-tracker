@@ -100,7 +100,11 @@ async def transactions():
         {"field": "date", "sortable": True},
         {"field": "category"},
         {"field": "description", "filter": "agTextColumnFilter"},
-        {"field": "amount"},
+        {
+            "field": "amount",
+            # currencyFormatter defined in nav.py
+            ":valueFormatter": "currencyFormatter",
+        },
         {"field": "source_account_name", "filter": "agTextColumnFilter"},
         {"field": "bill", "filter": "agTextColumnFilter"},
     ]

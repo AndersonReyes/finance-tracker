@@ -2,6 +2,12 @@ from nicegui import ui
 
 
 def nav():
+    ui.add_body_html("""
+        <script>
+        function currencyFormatter(v) {
+            return '$' + v.value.toLocaleString("en-US")
+        }
+        </script>""")
     with ui.column(align_items="center").classes("w-full"):
         dark = ui.dark_mode(None)
         ui.switch("Dark mode").bind_value(dark)

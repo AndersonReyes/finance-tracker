@@ -34,9 +34,19 @@ def list_budgets():
         for b in client.get_budgets()
     ]
     columns = [
-        {"field": "id", "editable": False, "sortable": True},
+        {
+            "field": "id",
+            "editable": False,
+            "sortable": True,
+        },
         {"field": "category", "editable": True, "sortable": True},
-        {"field": "budget", "editable": True, "sortable": True},
+        {
+            "field": "budget",
+            "editable": True,
+            "sortable": True,
+            # currencyFormatter defined in nav.py,
+            ":valueFormatter": "currencyFormatter",
+        },
     ]
     table = (
         ui.aggrid(

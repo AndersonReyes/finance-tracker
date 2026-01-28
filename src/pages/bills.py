@@ -7,6 +7,58 @@ from components.db import client, models
 from nav import nav
 
 
+@ui.refreshable
+def list_bills():
+    bills = [
+        {
+            "id": b.id,
+            "name": b.name,
+            "expected_amount": b.expected_amount,
+            "matcher": b.regex_str,
+        }
+        for b in client.get_bills()
+    ]
+    columns = [
+        {"field": "id", "editable": False, "sortable": True},
+        {"field": "name", "editable": True, "sortable": True},
+        {
+            "field": "expected_amount",
+            "editable": True,
+            # currencyFormatter defined in nav.py
+            ":valueFormatter": "currencyFormatter",
+        },
+        {"field": "matcher", "editable": True},
+    ]
+
+    with ui.row(align_items="center").classes("w-full"):
+        ui.button("Add Row", color="primary", on_click=lambda: row_add())
+        ui.button(
+            "Match bill to transactions",
+            color="green",
+            on_click=lambda x: match_bills(table),
+        )
+
+    table = (
+        ui.aggrid(
+            {
+                "columnDefs": columns,
+                "rowData": bills,
+                "stopEditingWhenCellsLoseFocus": True,
+                "pagination": True,
+                "paginationPageSize": 20,
+                "rowSelection": {"mode": "multiRow"},
+                "grandTotalRow": "top",
+            }
+        )
+        .classes("w-full")
+        .style("height: 66.67vh")
+    )
+    table = table.on("cellValueChanged", lambda x: row_edit(x))
+    ui.button(
+        "Delete selected", color="red", on_click=lambda: delete_selected(table)
+    ).classes("flex-end")
+
+
 async def match_bills(table: ui.aggrid):
     bills = [
         models.Bill(
@@ -31,7 +83,6 @@ def row_add():
             )
         ]
     )
-    list_bills.refresh()
     ui.notify("row added")
 
 
@@ -47,8 +98,6 @@ def row_edit(e: GenericEventArguments):
             )
         ]
     )
-    list_bills.refresh()
-    ui.notify("row updated")
 
 
 async def delete_selected(table: ui.aggrid):
@@ -56,51 +105,6 @@ async def delete_selected(table: ui.aggrid):
     client.delete_bill_by_id(selected_ids)
     list_bills.refresh()
     ui.notify("row deleted")
-
-
-@ui.refreshable
-def list_bills():
-    bills = [
-        {
-            "id": b.id,
-            "name": b.name,
-            "expected_amount": b.expected_amount,
-            "matcher": b.regex_str,
-        }
-        for b in client.get_bills()
-    ]
-    columns = [
-        {"field": "id", "editable": False, "sortable": True},
-        {"field": "name", "editable": True, "sortable": True},
-        {"field": "expected_amount", "editable": True, "sortable": True},
-        {"field": "matcher", "editable": True},
-    ]
-
-    with ui.row(align_items="center").classes("w-full"):
-        ui.button("Add Row", color="primary", on_click=lambda: row_add())
-        ui.button(
-            "Match bill to transactions",
-            color="green",
-            on_click=lambda x: match_bills(table),
-        )
-        ui.button(
-            "Delete selected", color="red", on_click=lambda: delete_selected(table)
-        )
-
-    table = (
-        ui.aggrid(
-            {
-                "columnDefs": columns,
-                "rowData": bills,
-                "stopEditingWhenCellsLoseFocus": True,
-                "pagination": True,
-                "rowSelection": {"mode": "multiRow"},
-            }
-        )
-        .classes("w-full")
-        .style("height: 66.67vh")
-    )
-    table = table.on("cellValueChanged", lambda x: row_edit(x))
 
 
 def page():

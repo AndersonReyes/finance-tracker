@@ -115,7 +115,7 @@ def delete_budget_by_id(ids: List[int]):
 
 def get_bills() -> Sequence[Bill]:
     with Session(_engine) as s:
-        qry = select(Bill).order_by(Bill.name)
+        qry = select(Bill).order_by(Bill.id)
         return s.scalars(qry).all()
 
 
