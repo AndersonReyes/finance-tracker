@@ -1,0 +1,11 @@
+services:
+  finance-tracker:
+    build:
+      context: .
+    container_name: finance-tracker
+    restart: unless-stopped
+    ports:
+      - "8999:8080"
+    volumes:
+      - ./src:/app
+      - /home/anderson/homelab/finance-tracker/data:/app/data
