@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session, joinedload
 from components.db.models import (
     Base,
     Bill,
-    BillCharged,
     Budget,
     CategoryExpense,
     Transaction,
@@ -144,7 +143,7 @@ def delete_bill_by_id(ids: List[int]):
         s.commit()
 
 
-def match_bills_to_transactions(bills: List[Bill]) -> int:
+def match_bills_to_transactions(bills: Sequence[Bill]) -> int:
     num_updated = 0
     with Session(_engine) as s:
         for b in bills:

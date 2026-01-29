@@ -7,6 +7,8 @@ from typing import List
 from nicegui import binding, ui
 from nicegui.events import UploadEventArguments
 
+import utils
+from components import date_range
 from components.db import client, models
 from components.money import rules
 from nav import nav
@@ -15,23 +17,10 @@ from nav import nav
 @binding.bindable_dataclass
 class _State:
     bank = ""
+    dates = ""
 
 
 state = _State()
-
-tables = [models.Transaction]
-current_table = ""
-
-
-colMaps = {
-    "money-cli": {
-        "Date": "date",
-        "SourceAccount": "source_account_name",
-        "Amount": "amount",
-        "Description": "description",
-        "Category": "category",
-    }
-}
 
 
 def money_cli(data: List[dict]) -> List[models.Transaction]:
@@ -94,11 +83,12 @@ def process_capitalone_bank(
 
 @ui.refreshable
 async def transactions():
-    trans = client.get_transactions(datetime.min, datetime.max)
+    start, end = utils.get_dates(state.dates)
+    trans = client.get_transactions(start, end)
     columns = [
         {"field": "id", "name": "id"},
-        {"field": "date", "sortable": True},
-        {"field": "category"},
+        {"field": "date", "sortable": True, "filter": "agTextColumnFilter"},
+        {"field": "category", "filter": "agSetColumnFilter"},
         {"field": "description", "filter": "agTextColumnFilter"},
         {
             "field": "amount",
@@ -126,13 +116,19 @@ async def transactions():
         )
         # rows.append({c: getattr(t, c["field"]) for c in columns})
 
-    ui.aggrid(
-        {
-            "columnDefs": columns,
-            "rowData": rows,
-            "pagination": True,
-        }
-    ).classes("w-full").style("height: 66.67vh")
+    table = (
+        ui.aggrid(
+            {
+                "columnDefs": columns,
+                "rowData": rows,
+                "paginationPageSize": 20,
+                "pagination": True,
+            }
+        )
+        .classes("w-full")
+        .style("height: 66.67vh")
+    )
+    table = table.on("paginationChanged", lambda x: ui.notify("poage requested"))
 
 
 async def insert_data(e: UploadEventArguments):
@@ -166,12 +162,9 @@ async def insert_data(e: UploadEventArguments):
     client.add_transactions(trs)
     transactions.refresh()
     print("processed file: ", e.file.name)
-    ui.notify("processed file: " + e.file.name)
 
-
-@ui.refreshable
-def budget_editor():
-    pass
+    client.match_bills_to_transactions(client.get_bills())
+    ui.notify("imported file: " + e.file.name)
 
 
 async def page():
@@ -196,4 +189,7 @@ async def page():
         ui.separator()
 
         ui.markdown("## Transaction History")
+        date_input = date_range.component()
+        date_input.bind_value_to(state, "dates")
+        date_input.on_value_change(lambda: transactions.refresh())
         await transactions()

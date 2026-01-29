@@ -12,9 +12,10 @@ from nav import nav
 @binding.bindable_dataclass
 class _State:
     file = ""
+    dates = ""
     data: Sequence[models.CategoryExpense] = field(default_factory=list)
     budget_chart: dict = field(default_factory=dict)
-    dates = ""
+    # dates = ""
     bills: Sequence[models.Bill] = field(default_factory=list)
     transactions: Sequence[models.Transaction] = field(default_factory=list)
 
@@ -136,8 +137,58 @@ def bills_chart():
     ui.echart(chart).classes("w-full h-128")
 
 
-def load_data():
+@ui.refreshable
+async def transactions():
     start, end = utils.get_dates(state.dates)
+    trans = client.get_transactions(start, end)
+    columns = [
+        {"field": "id", "name": "id"},
+        {"field": "date", "sortable": True, "filter": "agTextColumnFilter"},
+        {"field": "category", "filter": "agSetColumnFilter"},
+        {"field": "description", "filter": "agTextColumnFilter"},
+        {
+            "field": "amount",
+            # currencyFormatter defined in nav.py
+            ":valueFormatter": "currencyFormatter",
+        },
+        {"field": "source_account_name", "filter": "agTextColumnFilter"},
+        {"field": "bill", "filter": "agTextColumnFilter"},
+    ]
+    rows = []
+    for t in trans:
+        bill = t.bill
+        if bill:
+            bill = bill.name
+        rows.append(
+            {
+                "id": t.id,
+                "date": t.date,
+                "category": t.category,
+                "description": t.description,
+                "source_account_name": t.source_account_name,
+                "amount": t.amount,
+                "bill": bill,
+            }
+        )
+        # rows.append({c: getattr(t, c["field"]) for c in columns})
+
+    table = (
+        ui.aggrid(
+            {
+                "columnDefs": columns,
+                "rowData": rows,
+                "paginationPageSize": 20,
+                "pagination": True,
+            }
+        )
+        .classes("w-full")
+        .style("height: 66.67vh")
+    )
+    table = table.on("paginationChanged", lambda x: ui.notify("poage requested"))
+
+
+def load_data(dates: str):
+    start, end = utils.get_dates(dates)
     state.data = client.get_category_expenses(start, end)
     state.bills = client.get_bills()
     state.transactions = client.get_transactions(start, end)
@@ -147,15 +198,15 @@ def load_data():
     bills_chart.refresh()
 
 
-def page():
+async def page():
     nav()
 
     with ui.column(align_items="center").classes("w-full"):
         with ui.row():
             date_input = date_range.component()
             date_input.bind_value_to(state, "dates")
-            date_input.on_value_change(lambda x: load_data())
-            load_data()
+            date_input.on_value_change(lambda x: load_data(x.value))
+            load_data(date_input.value)
 
         ui.markdown("## Category: budget vs expense")
         category_chart()
@@ -163,4 +214,8 @@ def page():
 
         ui.markdown("## Bills: expected vs actual")
         bills_chart()
+        ui.separator()
         # category_table()
+
+        ui.markdown("## Transactions")
+        await transactions()

@@ -1,4 +1,5 @@
 import decimal
+from dataclasses import field
 
 from nicegui import ui
 from nicegui.events import GenericEventArguments
@@ -107,8 +108,19 @@ async def delete_selected(table: ui.aggrid):
     ui.notify("row deleted")
 
 
+def summary():
+    bills = client.get_bills()
+    monthly_costs = sum([b.expected_amount for b in bills])
+    ui.markdown(f"""
+    # Summary
+    number of bills: {len(bills)} <br>
+    monthly costs: ${monthly_costs:,.2f}
+    """)
+
+
 def page():
     nav()
 
     with ui.column(align_items="center").classes("w-full"):
+        summary()
         list_bills()
