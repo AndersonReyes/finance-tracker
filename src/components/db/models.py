@@ -39,6 +39,7 @@ class Transaction(Base):
         ForeignKey("bills.id", name="fk_bill_id"), nullable=True
     )
     bill = relationship("Bill")
+    tags: Mapped[str] = mapped_column(String(2048), nullable=True)
 
 
 class Budget(Base):
