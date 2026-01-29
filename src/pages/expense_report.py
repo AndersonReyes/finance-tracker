@@ -1,8 +1,7 @@
 from dataclasses import field
-from typing import Dict, Sequence
+from typing import Sequence
 
 from nicegui import binding, ui
-from nicegui.events import EChartComponentClickEventArguments
 
 import utils
 from components import agg, date_range

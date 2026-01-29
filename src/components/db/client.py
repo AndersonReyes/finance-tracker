@@ -13,7 +13,7 @@ from components.db.models import (
     Transaction,
 )
 
-_engine = create_engine("sqlite:///db.sqlite", echo=False)
+_engine = create_engine("sqlite:///data/db.sqlite", echo=False)
 
 Base.metadata.create_all(_engine)
 
