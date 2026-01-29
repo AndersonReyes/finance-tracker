@@ -88,12 +88,12 @@ async def transactions():
     columns = [
         {"field": "id", "name": "id"},
         {"field": "date", "sortable": True, "filter": "agTextColumnFilter"},
-        {"field": "category", "filter": "agSetColumnFilter", "editable": True},
+        {"field": "category", "filter": "agTextColumnFilter", "editable": True},
         {"field": "description", "filter": "agTextColumnFilter", "editable": True},
         {
             "field": "amount",
             # currencyFormatter defined in nav.py
-            ":valueFormatter": "currencyFormatter",
+            **utils.Javascript.currency_formatter,
         },
         {"field": "source_account_name", "filter": "agTextColumnFilter"},
         {"field": "bill", "filter": "agTextColumnFilter"},

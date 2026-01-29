@@ -1,7 +1,8 @@
 from dataclasses import field
-from typing import Sequence
+from typing import Dict, Sequence
 
 from nicegui import binding, ui
+from nicegui.events import EChartComponentClickEventArguments
 
 import utils
 from components import agg, date_range
@@ -18,6 +19,7 @@ class _State:
     # dates = ""
     bills: Sequence[models.Bill] = field(default_factory=list)
     transactions: Sequence[models.Transaction] = field(default_factory=list)
+    filters: dict = field(default_factory=dict)
 
 
 state = _State()
@@ -56,7 +58,7 @@ def category_chart():
         "series": [
             {
                 "type": "bar",
-                "name": "Spent",
+                "name": "Net",
                 "emphasis": {"focus": "self"},
                 "label": {
                     "show": False,
@@ -83,7 +85,7 @@ def category_chart():
                 "data": [v.budget for v in state.data],
             },
         ],
-        "legend": {"data": ["Spent", "Budget"]},
+        "legend": {"data": ["Net", "Budget"]},
         "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
     }
     ui.echart(budget_chart).classes("w-full h-128")
@@ -92,6 +94,8 @@ def category_chart():
 @ui.refreshable
 def bills_chart():
     aggregated = agg.agg_amount_by_bill(state.bills, state.transactions)
+    total_actual = sum((a.actual_amount for a in aggregated))
+    total_expected = sum((a.expected_amount for a in aggregated))
     chart = {
         "xAxis": {
             "type": "category",
@@ -134,7 +138,10 @@ def bills_chart():
         "legend": {"data": ["Expected", "Charged"]},
         "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
     }
-    ui.echart(chart).classes("w-full h-128")
+    ui.markdown(f"""## Bills: expected vs actual
+        total expected: ${total_expected:,.2f},  total actual: ${total_actual:,.2f}
+    """)
+    chart = ui.echart(chart).classes("w-full h-128").on_click(lambda x: print(x))
 
 
 @ui.refreshable
@@ -148,8 +155,7 @@ def transactions():
         {"field": "description", "filter": "agTextColumnFilter"},
         {
             "field": "amount",
-            # currencyFormatter defined in nav.py
-            ":valueFormatter": "currencyFormatter",
+            **utils.Javascript.currency_formatter,
         },
         {"field": "source_account_name", "filter": "agTextColumnFilter"},
         {"field": "bill", "filter": "agTextColumnFilter"},
@@ -207,7 +213,6 @@ async def page():
         category_chart()
         ui.separator()
 
-        ui.markdown("## Bills: expected vs actual")
         bills_chart()
         ui.separator()
         # category_table()

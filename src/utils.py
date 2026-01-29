@@ -21,3 +21,9 @@ def get_dates(str_range: str) -> Tuple[datetime, datetime]:
 
 def dataclass_to_dict(d, **kwargs):
     return {**asdict(d), **kwargs}
+
+
+class Javascript:
+    currency_formatter = {
+        ":valueFormatter": "(p) => '$' + p.value.toLocaleString('en-US')"
+    }
