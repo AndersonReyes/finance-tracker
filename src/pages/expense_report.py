@@ -138,7 +138,7 @@ def bills_chart():
 
 
 @ui.refreshable
-async def transactions():
+def transactions():
     start, end = utils.get_dates(state.dates)
     trans = client.get_transactions(start, end)
     columns = [
@@ -172,19 +172,14 @@ async def transactions():
         )
         # rows.append({c: getattr(t, c["field"]) for c in columns})
 
-    table = (
-        ui.aggrid(
-            {
-                "columnDefs": columns,
-                "rowData": rows,
-                "paginationPageSize": 20,
-                "pagination": True,
-            }
-        )
-        .classes("w-full")
-        .style("height: 66.67vh")
-    )
-    table = table.on("paginationChanged", lambda x: ui.notify("poage requested"))
+    ui.aggrid(
+        {
+            "columnDefs": columns,
+            "rowData": rows,
+            "paginationPageSize": 20,
+            "pagination": True,
+        }
+    ).classes("w-full").style("height: 66.67vh")
 
 
 def load_data(dates: str):
@@ -218,4 +213,4 @@ async def page():
         # category_table()
 
         ui.markdown("## Transactions")
-        await transactions()
+        transactions()

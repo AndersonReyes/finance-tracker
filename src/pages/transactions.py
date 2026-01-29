@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List
 
 from nicegui import binding, ui
-from nicegui.events import UploadEventArguments
+from nicegui.events import GenericEventArguments, UploadEventArguments
 
 import utils
 from components import date_range
@@ -88,8 +88,8 @@ async def transactions():
     columns = [
         {"field": "id", "name": "id"},
         {"field": "date", "sortable": True, "filter": "agTextColumnFilter"},
-        {"field": "category", "filter": "agSetColumnFilter"},
-        {"field": "description", "filter": "agTextColumnFilter"},
+        {"field": "category", "filter": "agSetColumnFilter", "editable": True},
+        {"field": "description", "filter": "agTextColumnFilter", "editable": True},
         {
             "field": "amount",
             # currencyFormatter defined in nav.py
@@ -116,19 +116,30 @@ async def transactions():
         )
         # rows.append({c: getattr(t, c["field"]) for c in columns})
 
-    table = (
-        ui.aggrid(
-            {
-                "columnDefs": columns,
-                "rowData": rows,
-                "paginationPageSize": 20,
-                "pagination": True,
-            }
-        )
-        .classes("w-full")
-        .style("height: 66.67vh")
+    ui.aggrid(
+        {
+            "columnDefs": columns,
+            "rowData": rows,
+            "paginationPageSize": 20,
+            "pagination": True,
+        }
+    ).classes("w-full").style("height: 66.67vh").on(
+        "cellValueChanged", lambda x: row_edit(x)
     )
-    table = table.on("paginationChanged", lambda x: ui.notify("poage requested"))
+
+
+def row_edit(e: GenericEventArguments):
+    row = e.args["data"]
+    client.update_transactions(
+        [
+            dict(
+                id=row["id"],
+                description=row["description"],
+                category=row["category"],
+            )
+        ]
+    )
+    ui.notify("transaction updated")
 
 
 async def insert_data(e: UploadEventArguments):

@@ -2,7 +2,7 @@ import decimal
 from datetime import datetime, timedelta
 from typing import List, Sequence
 
-from sqlalchemy import and_, create_engine, delete, func, or_, select, update
+from sqlalchemy import and_, bindparam, create_engine, delete, func, or_, select, update
 from sqlalchemy.orm import Session, joinedload
 
 from components.db.models import (
@@ -13,7 +13,7 @@ from components.db.models import (
     Transaction,
 )
 
-_engine = create_engine("sqlite:///db.sqlite", echo=False)
+_engine = create_engine("sqlite:///db.sqlite", echo=True)
 
 Base.metadata.create_all(_engine)
 
@@ -27,6 +27,16 @@ Base.metadata.create_all(_engine)
 def add_transactions(trans: List[Transaction]):
     with Session(_engine) as s:
         s.add_all(trans)
+        s.commit()
+
+
+def update_transactions(transactions: List[dict]):
+    fields = {key: bindparam(key) for key in transactions[0] if key != "id"}
+    with Session(_engine) as s:
+        s.execute(
+            update(Transaction).values(**fields),
+            transactions,
+        )
         s.commit()
 
 
@@ -132,8 +142,12 @@ def add_bills(bills: List[Bill]):
 
 
 def update_bills(bills: List[dict]):
+    fields = {key: bindparam(key) for key in bills[0] if key != "id"}
     with Session(_engine) as s:
-        s.execute(update(Bill), bills)
+        s.execute(
+            update(Bill).values(**fields),
+            bills,
+        )
         s.commit()
 
 
@@ -158,9 +172,9 @@ def match_bills_to_transactions(bills: Sequence[Bill]) -> int:
                 .values(bill_id=b.id)
                 .returning(Transaction.id)
             ).all()
-            s.commit()
             num_matched = len(res)
             num_updated += num_matched
-
             print(f"assigned {num_matched} transactions for bill: {b.name}")
+
+            s.commit()
     return num_updated

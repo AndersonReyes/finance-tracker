@@ -1,5 +1,4 @@
 import decimal
-from dataclasses import field
 
 from nicegui import ui
 from nicegui.events import GenericEventArguments
@@ -84,6 +83,7 @@ def row_add():
             )
         ]
     )
+    list_bills.refresh()
     ui.notify("row added")
 
 
@@ -99,6 +99,7 @@ def row_edit(e: GenericEventArguments):
             )
         ]
     )
+    list_bills.refresh()
 
 
 async def delete_selected(table: ui.aggrid):
