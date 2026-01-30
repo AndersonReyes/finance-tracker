@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 
 from alembic import context
@@ -24,6 +25,10 @@ target_metadata = models.Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+script_loc: str = os.getenv("MIGRATIONS", config.get_main_option("script_location"))
+sqlachemy_url: str = os.getenv("DB", config.get_main_option("sqlalchemy.url"))
+config.set_main_option("script_location", script_loc)
+config.set_main_option("sqlalchemy.url", sqlachemy_url)
 
 
 def run_migrations_offline() -> None:
