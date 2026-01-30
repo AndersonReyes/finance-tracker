@@ -1,6 +1,6 @@
 import decimal
+import os
 from datetime import datetime, timedelta
-from operator import itemgetter
 from typing import List, Sequence
 
 from sqlalchemy import and_, bindparam, create_engine, delete, func, or_, select, update
@@ -14,7 +14,7 @@ from components.db.models import (
     Transaction,
 )
 
-_engine = create_engine("sqlite:///data/db.sqlite", echo=False)
+_engine = create_engine(os.getenv("DB", "sqlite:///data/db.sqlite"), echo=False)
 
 Base.metadata.create_all(_engine)
 

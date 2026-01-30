@@ -6,6 +6,10 @@ services:
     restart: unless-stopped
     ports:
       - "8999:8080"
+    environment:
+      #   - MIGRATIONS=/migrations
+      - DB=sqlite:////app/data/db.sqlite
     volumes:
-      - ./src:/app
+      - .:/app/app
       - /home/anderson/homelab/finance-tracker/data:/app/data
+      # - ./migrations:/migrations
