@@ -196,6 +196,7 @@ def load_data(dates: str):
     category_chart.refresh()
     # category_table.refresh()
     bills_chart.refresh()
+    transactions.refresh()
 
 
 async def page():
