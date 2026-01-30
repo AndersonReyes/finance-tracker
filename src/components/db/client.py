@@ -1,5 +1,6 @@
 import decimal
 from datetime import datetime, timedelta
+from operator import itemgetter
 from typing import List, Sequence
 
 from sqlalchemy import and_, bindparam, create_engine, delete, func, or_, select, update
@@ -159,6 +160,7 @@ def delete_bill_by_id(ids: List[int]):
 
 def match_bills_to_transactions(bills: Sequence[Bill]) -> int:
     num_updated = 0
+    bill_updates = []
     with Session(_engine) as s:
         for b in bills:
             res = s.execute(
@@ -170,11 +172,17 @@ def match_bills_to_transactions(bills: Sequence[Bill]) -> int:
                     )
                 )
                 .values(bill_id=b.id)
-                .returning(Transaction.id)
+                .returning(Transaction.date)
             ).all()
             num_matched = len(res)
+            latest_charge = max((x[0] for x in res))
             num_updated += num_matched
+            bill_updates.append({"id": b.id, "last_charged": latest_charge})
             print(f"assigned {num_matched} transactions for bill: {b.name}")
 
             s.commit()
+
+        # update last charges
+        update_bills(bill_updates)
+        s.commit()
     return num_updated

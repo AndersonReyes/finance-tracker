@@ -138,8 +138,8 @@ def bills_chart():
         "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
     }
     ui.markdown(f"""## Bills: expected vs actual
-        total expected: ${total_expected:,.2f},  total actual: ${total_actual:,.2f}
-    """)
+total expected: ${total_expected:,.2f},  total actual: ${total_actual:,.2f}
+""")
     chart = ui.echart(chart).classes("w-full h-128").on_click(lambda x: print(x))
 
 
@@ -150,7 +150,7 @@ def transactions():
     columns = [
         {"field": "id", "name": "id"},
         {"field": "date", "sortable": True, "filter": "agTextColumnFilter"},
-        {"field": "category", "filter": "agSetColumnFilter"},
+        {"field": "category", "filter": "agTextColumnFilter"},
         {"field": "description", "filter": "agTextColumnFilter"},
         {
             "field": "amount",

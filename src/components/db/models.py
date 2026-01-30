@@ -61,6 +61,7 @@ class Bill(Base):
     transactions: Mapped[List[Transaction]] = relationship(
         "Transaction", back_populates="bill"
     )
+    last_charged: Mapped[datetime.datetime] = mapped_column(DateTime(), nullable=True)
 
 
 @dataclass

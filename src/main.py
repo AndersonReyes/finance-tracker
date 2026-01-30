@@ -1,3 +1,4 @@
+import alembic.config
 from nicegui import ui
 
 from nav import nav
@@ -21,4 +22,12 @@ def main():
         nav()
 
 
-ui.run(root)
+def run_migrations():
+    print("running migrations:\n")
+    alembic.config.main(argv=["upgrade", "head"])
+    print("migrations done\n")
+
+
+if __name__ in {"__main__", "__mp_main__"}:
+    run_migrations()
+    ui.run(root)

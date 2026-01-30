@@ -15,12 +15,14 @@ def list_bills():
             "name": b.name,
             "expected_amount": b.expected_amount,
             "matcher": b.regex_str,
+            "last_charged": b.last_charged,
         }
         for b in client.get_bills()
     ]
     columns = [
         {"field": "id", "editable": False, "sortable": True},
         {"field": "name", "editable": True, "sortable": True},
+        {"field": "last_charged", "editable": False, "sortable": True},
         {
             "field": "expected_amount",
             "editable": True,
